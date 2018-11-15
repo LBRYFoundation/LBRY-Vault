@@ -32,9 +32,8 @@ from .util import bfh, bh2u
 from .simple_config import SimpleConfig
 
 
-HEADER_SIZE = 80  # bytes
-MAX_TARGET = 0x00000000FFFF0000000000000000000000000000000000000000000000000000
-
+HEADER_SIZE = 112  # bytes
+MAX_TARGET = 0x0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
 
 class MissingHeader(Exception):
     pass
@@ -46,6 +45,7 @@ def serialize_header(header_dict: dict) -> str:
     s = int_to_hex(header_dict['version'], 4) \
         + rev_hex(header_dict['prev_block_hash']) \
         + rev_hex(header_dict['merkle_root']) \
+        + rev_hex(res.get('claim_trie_root'))
         + int_to_hex(int(header_dict['timestamp']), 4) \
         + int_to_hex(int(header_dict['bits']), 4) \
         + int_to_hex(int(header_dict['nonce']), 4)
@@ -60,10 +60,10 @@ def deserialize_header(s: bytes, height: int) -> dict:
     h = {}
     h['version'] = hex_to_int(s[0:4])
     h['prev_block_hash'] = hash_encode(s[4:36])
-    h['merkle_root'] = hash_encode(s[36:68])
-    h['timestamp'] = hex_to_int(s[68:72])
-    h['bits'] = hex_to_int(s[72:76])
-    h['nonce'] = hex_to_int(s[76:80])
+    h['claim_trie_root'] = hash_encode(s[68:100])
+    h['timestamp'] = hex_to_int(s[100:104])
+    h['bits'] = hex_to_int(s[104:108])
+    h['nonce'] = hex_to_int(s[108:112])
     h['block_height'] = height
     return h
 
@@ -363,15 +363,28 @@ class Blockchain(util.PrintError):
         bits = last.get('bits')
         target = self.bits_to_target(bits)
         nActualTimespan = last.get('timestamp') - first.get('timestamp')
-        nTargetTimespan = 14 * 24 * 60 * 60
-        nActualTimespan = max(nActualTimespan, nTargetTimespan // 4)
-        nActualTimespan = min(nActualTimespan, nTargetTimespan * 4)
-        new_target = min(MAX_TARGET, (target * nActualTimespan) // nTargetTimespan)
-        return new_target
+        nTargetTimespan = self.150
+        nModulatedTimespan = nTargetTimespan - (nActualTimespan - nTargetTimespan) / 8
+        nMinTimespan = nTargetTimespan - (nTargetTimespan / 8)
+        nMaxTimespan = nTargetTimespan + (nTargetTimespan / 2)
+        if nModulatedTimespan < nMinTimespan:
+            nModulatedTimespan = nMinTimespan
+        elif nModulatedTimespan > nMaxTimespan:
+            nModulatedTimespan = nMaxTimespan
+
+        bnOld = ArithUint256.SetCompact(bits)
+        bnNew = bnOld * nModulatedTimespan
+        # this doesn't work if it is nTargetTimespan even though that
+        # is what it looks like it should be based on reading the code
+        # in lbry.cpp
+        bnNew /= nModulatedTimespan
+        if bnNew > self.MAX_TARGET:
+            bnNew = ArithUint256(self.MAX_TARGET)
+        return bnNew.GetCompact(), bnNew._value
 
     def bits_to_target(self, bits: int) -> int:
         bitsN = (bits >> 24) & 0xff
-        if not (bitsN >= 0x03 and bitsN <= 0x1d):
+        if not (bitsN >= 0x03 and bitsN <= 0x1f):
             raise Exception("First part of bits should be in [0x03, 0x1d]")
         bitsBase = bits & 0xffffff
         if not (bitsBase >= 0x8000 and bitsBase <= 0x7fffff):
