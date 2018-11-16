@@ -429,6 +429,7 @@ class Blockchain(util.PrintError):
         try:
             self.verify_header(header, prev_hash, target)
         except BaseException as e:
+            self.print_error(e)
             return False
         self.print_error("6")
         return True
