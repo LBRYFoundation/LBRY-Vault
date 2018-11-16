@@ -382,7 +382,7 @@ class Blockchain(util.PrintError):
             bnNew = ArithUint256(self.MAX_TARGET)
         return bnNew.GetCompact(), bnNew._value
 
-def get_target2(self, index, chain='main'):
+    def get_target2(self, index, chain='main'):
         """
         this follows the calculations in lbrycrd/src/lbry.cpp
         Returns: (bits, target)
