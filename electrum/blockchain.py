@@ -177,7 +177,7 @@ class Blockchain(util.PrintError):
         p = self.path()
         self._size = os.path.getsize(p)//HEADER_SIZE if os.path.exists(p) else 0
 
-    def verify_header(self, header: dict, prev_hash: str, target: int, expected_header_hash: str=None) -> None:
+    def verify_header(self, header: dict, prev_hash: str, target: int, bits: int, expected_header_hash: str=None) -> None:
         _hash = hash_header(header)
         if expected_header_hash and expected_header_hash != _hash:
             raise Exception("hash mismatches with expected: {} vs {}".format(expected_header_hash, _hash))
@@ -185,7 +185,6 @@ class Blockchain(util.PrintError):
             raise Exception("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')))
         if constants.net.TESTNET:
             return
-        bits = self.target_to_bits(target)
         if bits != header.get('bits'):
             raise Exception("bits mismatch: %s vs %s" % (bits, header.get('bits')))
         if int('0x' + _hash, 16) > target:
@@ -195,7 +194,7 @@ class Blockchain(util.PrintError):
         num = len(data) // HEADER_SIZE
         start_height = index * 2016
         prev_hash = self.get_hash(start_height - 1)
-        target = self.get_target(index-1)
+        bits, target = self.get_target2(index-1)
         for i in range(num):
             height = start_height + i
             try:
@@ -204,7 +203,7 @@ class Blockchain(util.PrintError):
                 expected_header_hash = None
             raw_header = data[i*HEADER_SIZE : (i+1)*HEADER_SIZE]
             header = deserialize_header(raw_header, index*2016 + i)
-            self.verify_header(header, prev_hash, target, expected_header_hash)
+            self.verify_header(header, prev_hash, target, bits, expected_header_hash)
             prev_hash = hash_header(header)
 
     def path(self):
@@ -383,6 +382,43 @@ class Blockchain(util.PrintError):
             bnNew = ArithUint256(self.MAX_TARGET)
         return bnNew.GetCompact(), bnNew._value
 
+def get_target2(self, index, chain='main'):
+        """
+        this follows the calculations in lbrycrd/src/lbry.cpp
+        Returns: (bits, target)
+        """
+
+        if index == 0:
+            return self.GENESIS_BITS, self.MAX_TARGET
+        first = self.read_header(index * 2016)
+        last = self.read_header(index * 2016 + 2015)
+        assert last is not None, "Last shouldn't be none"
+        # bits to target
+        bits = last.get('bits')
+        # print_error("Last bits: ", bits)
+        self.check_bits(bits)
+
+        # new target
+        nActualTimespan = last.get('timestamp') - first.get('timestamp')
+        nTargetTimespan = self.N_TARGET_TIMESPAN
+        nModulatedTimespan = nTargetTimespan - (nActualTimespan - nTargetTimespan) / 8
+        nMinTimespan = nTargetTimespan - (nTargetTimespan / 8)
+        nMaxTimespan = nTargetTimespan + (nTargetTimespan / 2)
+        if nModulatedTimespan < nMinTimespan:
+            nModulatedTimespan = nMinTimespan
+        elif nModulatedTimespan > nMaxTimespan:
+            nModulatedTimespan = nMaxTimespan
+
+        bnOld = ArithUint256.SetCompact(bits)
+        bnNew = bnOld * nModulatedTimespan
+        # this doesn't work if it is nTargetTimespan even though that
+        # is what it looks like it should be based on reading the code
+        # in lbry.cpp
+        bnNew /= nModulatedTimespan
+        if bnNew > self.MAX_TARGET:
+            bnNew = ArithUint256(self.MAX_TARGET)
+        return bnNew.GetCompact(), bnNew._value
+
     def bits_to_target(self, bits: int) -> int:
         bitsN = (bits >> 24) & 0xff
         if not (bitsN >= 0x03 and bitsN <= 0x1f):
@@ -422,12 +458,12 @@ class Blockchain(util.PrintError):
             return False
         self.print_error("4")
         try:
-            target = self.get_target(height // 2016 - 1)
+            bits, target = self.get_target2(height // 2016 - 1)
         except MissingHeader:
             return False
         self.print_error("5")
         try:
-            self.verify_header(header, prev_hash, target)
+            self.verify_header(header, prev_hash, target, bits)
         except BaseException as e:
             self.print_error(e)
             return False
