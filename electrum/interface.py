@@ -390,7 +390,7 @@ class Interface(PrintError):
             raw_header = item[0]
             self.print_error(raw_header)
             print(raw_header)
-            height = raw_header['block_height']
+            height = raw_header['height']
             header = blockchain.deserialize_header(bfh(raw_header['hex']), height)
             self.tip_header = header
             self.tip = height
