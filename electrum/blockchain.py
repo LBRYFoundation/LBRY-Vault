@@ -24,6 +24,9 @@ import os
 import threading
 from typing import Optional, Dict
 
+import hashlib
+import hmac
+
 from . import util
 from .bitcoin import hash_encode, int_to_hex, rev_hex
 from .crypto import sha256d
@@ -77,10 +80,38 @@ def hash_header(header: dict) -> str:
         header['prev_block_hash'] = '00'*32
     return hash_raw_header(serialize_header(header))
 
+def pow_hash_header(header: dict) -> str:
+    if header is None:
+        return '0' * 64
+    return hash_encode(PoWHash(bfh(serialize_header(header))))
+
+def sha256(x):
+    return hashlib.sha256(x).digest()
+
+def sha512(x):
+    return hashlib.sha512(x).digest()
+
+def ripemd160(x):
+    h = hashlib.new('ripemd160')
+    h.update(x)
+    return h.digest()
+
+def Hash(x):
+    if type(x) is unicode:
+        x = x.encode('utf-8')
+    return sha256(sha256(x))
 
 def hash_raw_header(header: str) -> str:
     return hash_encode(sha256d(bfh(header)))
 
+def PoWHash(x):
+    if type(x) is unicode:
+        x = x.encode('utf-8')
+    r = sha512(Hash(x))
+    r1 = ripemd160(r[:len(r) / 2])
+    r2 = ripemd160(r[len(r) / 2:])
+    r3 = Hash(r1 + r2)
+    return r3
 
 blockchains = {}  # type: Dict[int, Blockchain]
 blockchains_lock = threading.Lock()
@@ -180,7 +211,7 @@ class Blockchain(util.PrintError):
         self._size = os.path.getsize(p)//HEADER_SIZE if os.path.exists(p) else 0
 
     def verify_header(self, header: dict, prev_hash: str, target: int, bits: int, expected_header_hash: str=None) -> None:
-        _hash = hash_header(header)
+        _hash = pow_hash_header(header)
         if expected_header_hash and expected_header_hash != _hash:
             raise Exception("hash mismatches with expected: {} vs {}".format(expected_header_hash, _hash))
         if prev_hash != header.get('prev_block_hash'):
