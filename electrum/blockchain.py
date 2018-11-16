@@ -520,65 +520,78 @@ def can_connect(header: dict) -> Optional[Blockchain]:
     return None
 
 # see src/arith_uint256.cpp in lbrycrd
-class ArithUint256(object):
-    def __init__(self, value):
+class ArithUint256:
+    # https://github.com/bitcoin/bitcoin/blob/master/src/arith_uint256.cpp
+
+    __slots__ = '_value', '_compact'
+
+    def __init__(self, value: int) -> None:
         self._value = value
-
-    def __str__(self):
-        return hex(self._value)
-
-    @staticmethod
-    def fromCompact(nCompact):
-        """Convert a compact representation into its value"""
-        nSize = nCompact >> 24
-        # the lower 23 bits
-        nWord = nCompact & 0x007fffff
-        if nSize <= 3:
-            return nWord >> 8 * (3 - nSize)
-        else:
-            return nWord << 8 * (nSize - 3)
+        self._compact: Optional[int] = None
 
     @classmethod
-    def SetCompact(cls, nCompact):
-        return cls(ArithUint256.fromCompact(nCompact))
+    def from_compact(cls, compact) -> 'ArithUint256':
+        size = compact >> 24
+        word = compact & 0x007fffff
+        if size <= 3:
+            return cls(word >> 8 * (3 - size))
+        else:
+            return cls(word << 8 * (size - 3))
 
-    def bits(self):
-        """Returns the position of the highest bit set plus one."""
-        bn = bin(self._value)[2:]
-        for i, d in enumerate(bn):
+    @property
+    def value(self) -> int:
+        return self._value
+
+    @property
+    def compact(self) -> int:
+        if self._compact is None:
+            self._compact = self._calculate_compact()
+        return self._compact
+
+    @property
+    def negative(self) -> int:
+        return self._calculate_compact(negative=True)
+
+    @property
+    def bits(self) -> int:
+        """ Returns the position of the highest bit set plus one. """
+        bits = bin(self._value)[2:]
+        for i, d in enumerate(bits):
             if d:
-                return (len(bn) - i) + 1
+                return (len(bits) - i) + 1
         return 0
 
-    def GetLow64(self):
+    @property
+    def low64(self) -> int:
         return self._value & 0xffffffffffffffff
 
-    def GetCompact(self):
-        """Convert a value into its compact representation"""
-        nSize = (self.bits() + 7) // 8
-        nCompact = 0
-        if nSize <= 3:
-            nCompact = self.GetLow64() << 8 * (3 - nSize)
+    def _calculate_compact(self, negative=False) -> int:
+        size = (self.bits + 7) // 8
+        if size <= 3:
+            compact = self.low64 << 8 * (3 - size)
         else:
-            bn = ArithUint256(self._value >> 8 * (nSize - 3))
-            nCompact = bn.GetLow64()
+            compact = ArithUint256(self._value >> 8 * (size - 3)).low64
         # The 0x00800000 bit denotes the sign.
         # Thus, if it is already set, divide the mantissa by 256 and increase the exponent.
-        if nCompact & 0x00800000:
-            nCompact >>= 8
-            nSize += 1
-        assert (nCompact & ~0x007fffff) == 0
-        assert nSize < 256
-        nCompact |= nSize << 24
-        return nCompact
+        if compact & 0x00800000:
+            compact >>= 8
+            size += 1
+        assert (compact & ~0x007fffff) == 0
+        assert size < 256
+        compact |= size << 24
+        if negative and compact & 0x007fffff:
+            compact |= 0x00800000
+        return compact
 
     def __mul__(self, x):
         # Take the mod because we are limited to an unsigned 256 bit number
         return ArithUint256((self._value * x) % 2 ** 256)
 
-    def __idiv__(self, x):
-        self._value = (self._value // x)
-        return self
+    def __truediv__(self, x):
+        return ArithUint256(int(self._value / x))
 
-    def __gt__(self, x):
-        return self._value > x
+    def __gt__(self, other):
+        return self._value > other
+
+    def __lt__(self, other):
+        return self._value < other
