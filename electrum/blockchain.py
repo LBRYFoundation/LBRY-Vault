@@ -103,8 +103,6 @@ def hash_raw_header(header: str) -> str:
     return hash_encode(sha256d(bfh(header)))
 
 def PoWHash(x):
-    if type(x) is unicode:
-        x = x.encode('utf-8')
     r = sha512(Hash(x))
     r1 = ripemd160(r[:len(r) / 2])
     r2 = ripemd160(r[len(r) / 2:])
