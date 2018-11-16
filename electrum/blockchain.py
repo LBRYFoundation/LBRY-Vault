@@ -405,26 +405,32 @@ class Blockchain(util.PrintError):
     def can_connect(self, header: dict, check_height: bool=True) -> bool:
         if header is None:
             return False
+        self.print_error("1")
         height = header['block_height']
         if check_height and self.height() != height - 1:
-            #self.print_error("cannot connect at height", height)
+            self.print_error("cannot connect at height", height)
             return False
         if height == 0:
             return hash_header(header) == constants.net.GENESIS
+        self.print_error("2")
         try:
             prev_hash = self.get_hash(height - 1)
         except:
             return False
+        self.print_error("3")
         if prev_hash != header.get('prev_block_hash'):
             return False
+        self.print_error("4")
         try:
             target = self.get_target(height // 2016 - 1)
         except MissingHeader:
             return False
+        self.print_error("5")
         try:
             self.verify_header(header, prev_hash, target)
         except BaseException as e:
             return False
+        self.print_error("6")
         return True
 
     def connect_chunk(self, idx: int, hexdata: str) -> bool:
