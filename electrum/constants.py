@@ -26,6 +26,7 @@
 import os
 import json
 
+BLOCKS_PER_CHUNK = 96
 
 def read_json(filename, default):
     path = os.path.join(os.path.dirname(__file__), filename)
@@ -47,9 +48,9 @@ class AbstractNet:
 class BitcoinMainnet(AbstractNet):
 
     TESTNET = False
-    WIF_PREFIX = 0x80
-    ADDRTYPE_P2PKH = 0
-    ADDRTYPE_P2SH = 5
+    WIF_PREFIX = 0x1c
+    ADDRTYPE_P2PKH = 0x55
+    ADDRTYPE_P2SH = 0x7A
     SEGWIT_HRP = "bc"
     GENESIS = "9c89283ba0f3227f6c03b70216b9f665f0118d5e0fa729cedf4fb34d6a34f463"
     DEFAULT_PORTS = {'t': '50001', 's': '50002'}
