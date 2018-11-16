@@ -61,8 +61,6 @@ class NotificationSession(RPCSession):
         # will catch the exception, count errors, and at some point disconnect
         if isinstance(request, Notification):
             params, result = request.args[:-1], request.args[-1]
-            self.print_error(params)
-            self.print_error(result)
             key = self.get_hashable_key_for_rpc_call(request.method, params)
             if key in self.subscriptions:
                 self.cache[key] = result
@@ -390,6 +388,9 @@ class Interface(PrintError):
         while True:
             item = await header_queue.get()
             raw_header = item[0]
+            self.print_error(raw_header)
+            print(raw_header)
+            log(raw_header)
             height = raw_header['block_height']
             header = blockchain.deserialize_header(bfh(raw_header['hex']), height)
             self.tip_header = header
