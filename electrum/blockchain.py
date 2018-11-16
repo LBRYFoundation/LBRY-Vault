@@ -530,6 +530,10 @@ class ArithUint256:
         self._compact: Optional[int] = None
 
     @classmethod
+    def SetCompact(cls, nCompact):
+        return (ArithUint256.from_compact(nCompact))
+
+    @classmethod
     def from_compact(cls, compact) -> 'ArithUint256':
         size = compact >> 24
         word = compact & 0x007fffff
