@@ -83,7 +83,7 @@ def hash_header(header: dict) -> str:
 def pow_hash_header(header: dict) -> str:
     if header is None:
         return '0' * 64
-    return hash_encode(PoWHash(bfh(header['hex'])))
+    return hash_encode(PoWHash(bfh(serialize_header(header))))
 
 def sha256(x):
     return hashlib.sha256(x).digest()
@@ -103,6 +103,7 @@ def hash_raw_header(header: str) -> str:
     return hash_encode(sha256d(bfh(header)))
 
 def PoWHash(x):
+    x = x.encode('utf-8')
     r = sha512(Hash(x))
     r1 = ripemd160(r[:len(r) / 2])
     r2 = ripemd160(r[len(r) / 2:])
