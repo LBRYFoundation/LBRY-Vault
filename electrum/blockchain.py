@@ -382,7 +382,7 @@ class Blockchain(util.PrintError):
         bnNew /= nModulatedTimespan
         if bnNew > MAX_TARGET:
             bnNew = ArithUint256(MAX_TARGET)
-        return bnNew.GetCompact(), bnNew._value
+        return bnNew.compact(), bnNew._value
 
     def get_target2(self, index, last, chain='main'):
         """
