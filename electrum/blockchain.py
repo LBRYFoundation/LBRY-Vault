@@ -518,3 +518,67 @@ def can_connect(header: dict) -> Optional[Blockchain]:
         if b.can_connect(header):
             return b
     return None
+
+# see src/arith_uint256.cpp in lbrycrd
+class ArithUint256(object):
+    def __init__(self, value):
+        self._value = value
+
+    def __str__(self):
+        return hex(self._value)
+
+    @staticmethod
+    def fromCompact(nCompact):
+        """Convert a compact representation into its value"""
+        nSize = nCompact >> 24
+        # the lower 23 bits
+        nWord = nCompact & 0x007fffff
+        if nSize <= 3:
+            return nWord >> 8 * (3 - nSize)
+        else:
+            return nWord << 8 * (nSize - 3)
+
+    @classmethod
+    def SetCompact(cls, nCompact):
+        return cls(ArithUint256.fromCompact(nCompact))
+
+    def bits(self):
+        """Returns the position of the highest bit set plus one."""
+        bn = bin(self._value)[2:]
+        for i, d in enumerate(bn):
+            if d:
+                return (len(bn) - i) + 1
+        return 0
+
+    def GetLow64(self):
+        return self._value & 0xffffffffffffffff
+
+    def GetCompact(self):
+        """Convert a value into its compact representation"""
+        nSize = (self.bits() + 7) // 8
+        nCompact = 0
+        if nSize <= 3:
+            nCompact = self.GetLow64() << 8 * (3 - nSize)
+        else:
+            bn = ArithUint256(self._value >> 8 * (nSize - 3))
+            nCompact = bn.GetLow64()
+        # The 0x00800000 bit denotes the sign.
+        # Thus, if it is already set, divide the mantissa by 256 and increase the exponent.
+        if nCompact & 0x00800000:
+            nCompact >>= 8
+            nSize += 1
+        assert (nCompact & ~0x007fffff) == 0
+        assert nSize < 256
+        nCompact |= nSize << 24
+        return nCompact
+
+    def __mul__(self, x):
+        # Take the mod because we are limited to an unsigned 256 bit number
+        return ArithUint256((self._value * x) % 2 ** 256)
+
+    def __idiv__(self, x):
+        self._value = (self._value // x)
+        return self
+
+    def __gt__(self, x):
+        return self._value > x
