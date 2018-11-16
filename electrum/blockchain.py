@@ -34,6 +34,8 @@ from .simple_config import SimpleConfig
 
 HEADER_SIZE = 112  # bytes
 MAX_TARGET = 0x0000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+GENSIS_BITS = 0x1f00ffff
+N_TARGET_TIMESPAN = 150
 
 class MissingHeader(Exception):
     pass
@@ -378,8 +380,8 @@ class Blockchain(util.PrintError):
         # is what it looks like it should be based on reading the code
         # in lbry.cpp
         bnNew /= nModulatedTimespan
-        if bnNew > self.MAX_TARGET:
-            bnNew = ArithUint256(self.MAX_TARGET)
+        if bnNew > MAX_TARGET:
+            bnNew = ArithUint256(MAX_TARGET)
         return bnNew.GetCompact(), bnNew._value
 
     def get_target2(self, index, chain='main'):
@@ -387,9 +389,10 @@ class Blockchain(util.PrintError):
         this follows the calculations in lbrycrd/src/lbry.cpp
         Returns: (bits, target)
         """
-
+        if index == -1:
+            return GENESIS_BITS, MAX_TARGET
         if index == 0:
-            return self.GENESIS_BITS, self.MAX_TARGET
+            return GENESIS_BITS, MAX_TARGET
         first = self.read_header(index * 2016)
         last = self.read_header(index * 2016 + 2015)
         assert last is not None, "Last shouldn't be none"
@@ -400,7 +403,7 @@ class Blockchain(util.PrintError):
 
         # new target
         nActualTimespan = last.get('timestamp') - first.get('timestamp')
-        nTargetTimespan = self.N_TARGET_TIMESPAN
+        nTargetTimespan = N_TARGET_TIMESPAN
         nModulatedTimespan = nTargetTimespan - (nActualTimespan - nTargetTimespan) / 8
         nMinTimespan = nTargetTimespan - (nTargetTimespan / 8)
         nMaxTimespan = nTargetTimespan + (nTargetTimespan / 2)
@@ -415,8 +418,8 @@ class Blockchain(util.PrintError):
         # is what it looks like it should be based on reading the code
         # in lbry.cpp
         bnNew /= nModulatedTimespan
-        if bnNew > self.MAX_TARGET:
-            bnNew = ArithUint256(self.MAX_TARGET)
+        if bnNew > MAX_TARGET:
+            bnNew = ArithUint256(MAX_TARGET)
         return bnNew.GetCompact(), bnNew._value
 
     def bits_to_target(self, bits: int) -> int:
