@@ -97,8 +97,6 @@ def ripemd160(x):
     return h.digest()
 
 def Hash(x):
-    if type(x) is unicode:
-        x = x.encode('utf-8')
     return sha256(sha256(x))
 
 def hash_raw_header(header: str) -> str:
