@@ -363,7 +363,7 @@ class Blockchain(util.PrintError):
         bits = last.get('bits')
         target = self.bits_to_target(bits)
         nActualTimespan = last.get('timestamp') - first.get('timestamp')
-        nTargetTimespan = self.150
+        nTargetTimespan = 150
         nModulatedTimespan = nTargetTimespan - (nActualTimespan - nTargetTimespan) / 8
         nMinTimespan = nTargetTimespan - (nTargetTimespan / 8)
         nMaxTimespan = nTargetTimespan + (nTargetTimespan / 2)
