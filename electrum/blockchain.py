@@ -103,11 +103,15 @@ def hash_raw_header(header: str) -> str:
     return hash_encode(sha256d(bfh(header)))
 
 def PoWHash(x):
-    x = x.encode('utf-8')
+    util.print_error("11")
     r = sha512(Hash(x))
+    util.print_error("22")
     r1 = ripemd160(r[:len(r) / 2])
+    util.print_error("33")
     r2 = ripemd160(r[len(r) / 2:])
+    util.print_error("44")
     r3 = Hash(r1 + r2)
+    util.print_error("55")
     return r3
 
 blockchains = {}  # type: Dict[int, Blockchain]
