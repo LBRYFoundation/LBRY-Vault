@@ -196,7 +196,7 @@ class Blockchain(util.PrintError):
         num = len(data) // HEADER_SIZE
         start_height = index * 2016
         prev_hash = self.get_hash(start_height - 1)
-        bits, target = self.get_target2(index-1)
+        bits, target = self.get_target2(index, header)
         for i in range(num):
             height = start_height + i
             try:
@@ -384,7 +384,7 @@ class Blockchain(util.PrintError):
             bnNew = ArithUint256(MAX_TARGET)
         return bnNew.GetCompact(), bnNew._value
 
-    def get_target2(self, index, chain='main'):
+    def get_target2(self, index, last, chain='main'):
         """
         this follows the calculations in lbrycrd/src/lbry.cpp
         Returns: (bits, target)
@@ -393,8 +393,7 @@ class Blockchain(util.PrintError):
             return GENESIS_BITS, MAX_TARGET
         if index == 0:
             return GENESIS_BITS, MAX_TARGET
-        first = self.read_header(index * 2016)
-        last = self.read_header(index * 2016 + 2015)
+        first = self.read_header(index -1)
         assert last is not None, "Last shouldn't be none"
         # bits to target
         bits = last.get('bits')
@@ -461,7 +460,7 @@ class Blockchain(util.PrintError):
             return False
         self.print_error("4")
         try:
-            bits, target = self.get_target2(height // 2016 - 1)
+            bits, target = self.get_target2(height, header)
         except MissingHeader:
             return False
         self.print_error("5")
