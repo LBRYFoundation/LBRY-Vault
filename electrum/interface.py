@@ -326,7 +326,7 @@ class Interface(PrintError):
         # use lower timeout as we usually have network.bhi_lock here
         self.print_error('requesting block header {} in mode {}'.format(height, assert_mode))
         timeout = 5 if not self.proxy else 10
-        res = await self.session.send_request('blockchain.block.header', [height], timeout=timeout)
+        res = await self.session.send_request('blockchain.block.headers', [height,1], timeout=timeout)
         return blockchain.deserialize_header(bytes.fromhex(res), height)
 
     async def request_chunk(self, height, tip=None, *, can_return_early=False):
