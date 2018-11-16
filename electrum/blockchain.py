@@ -421,6 +421,14 @@ class Blockchain(util.PrintError):
             bnNew = ArithUint256(MAX_TARGET)
         return bnNew.GetCompact(), bnNew._value
 
+    def check_bits(self, bits):
+        bitsN = (bits >> 24) & 0xff
+        assert 0x03 <= bitsN <= 0x1f, \
+            "First part of bits should be in [0x03, 0x1d], but it was {}".format(hex(bitsN))
+        bitsBase = bits & 0xffffff
+        assert 0x8000 <= bitsBase <= 0x7fffff, \
+            "Second part of bits should be in [0x8000, 0x7fffff] but it was {}".format(bitsBase)
+
     def bits_to_target(self, bits: int) -> int:
         bitsN = (bits >> 24) & 0xff
         if not (bitsN >= 0x03 and bitsN <= 0x1f):
