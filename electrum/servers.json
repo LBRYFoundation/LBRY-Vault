@@ -3,12 +3,12 @@
         "pruning": "-",
         "s": "50002",
         "t": "50001",
-        "version": "1.4"
+        "version": "1.2"
     },
     "lbryumx2.lbry.io": {
         "pruning": "-",
         "s": "50002",
         "t": "50001",
-        "version": "1.4"
+        "version": "1.2"
     }
 }
