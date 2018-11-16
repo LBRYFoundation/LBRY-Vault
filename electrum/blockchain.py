@@ -60,6 +60,7 @@ def deserialize_header(s: bytes, height: int) -> dict:
     h = {}
     h['version'] = hex_to_int(s[0:4])
     h['prev_block_hash'] = hash_encode(s[4:36])
+    h['merkle_root'] = hash_encode(s[36:68])
     h['claim_trie_root'] = hash_encode(s[68:100])
     h['timestamp'] = hex_to_int(s[100:104])
     h['bits'] = hex_to_int(s[104:108])
