@@ -388,7 +388,7 @@ class Interface(PrintError):
         while True:
             item = await header_queue.get()
             raw_header = item[0]
-            height = raw_header['height']
+            height = raw_header['block_height']
             header = blockchain.deserialize_header(bfh(raw_header['hex']), height)
             self.tip_header = header
             self.tip = height

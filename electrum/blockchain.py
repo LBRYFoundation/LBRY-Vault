@@ -64,7 +64,7 @@ def deserialize_header(s: bytes, height: int) -> dict:
     h['timestamp'] = hex_to_int(s[100:104])
     h['bits'] = hex_to_int(s[104:108])
     h['nonce'] = hex_to_int(s[108:112])
-    h['height'] = height
+    h['block_height'] = height
     return h
 
 def hash_header(header: dict) -> str:
