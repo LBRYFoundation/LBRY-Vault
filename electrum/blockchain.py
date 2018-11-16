@@ -83,7 +83,7 @@ def hash_header(header: dict) -> str:
 def pow_hash_header(header: dict) -> str:
     if header is None:
         return '0' * 64
-    return hash_encode(PoWHash(bfh(serialize_header(header))))
+    return hash_encode(PoWHash(bfh(header)))
 
 def sha256(x):
     return hashlib.sha256(x).digest()
