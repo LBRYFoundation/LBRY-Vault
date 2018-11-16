@@ -387,12 +387,10 @@ class Interface(PrintError):
         await self.session.subscribe('blockchain.headers.subscribe', [True], header_queue)
         while True:
             item = await header_queue.get()
-            self.print_error(item)
-            print(item)            
-            raw_header = item[0]
+            raw_header = item[1]
             self.print_error(raw_header)
             print(raw_header)
-            height = raw_header['block_height']
+            height = raw_header['height']
             header = blockchain.deserialize_header(bfh(raw_header['hex']), height)
             self.tip_header = header
             self.tip = height
