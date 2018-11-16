@@ -61,6 +61,8 @@ class NotificationSession(RPCSession):
         # will catch the exception, count errors, and at some point disconnect
         if isinstance(request, Notification):
             params, result = request.args[:-1], request.args[-1]
+            print(params)
+            print(result)
             key = self.get_hashable_key_for_rpc_call(request.method, params)
             if key in self.subscriptions:
                 self.cache[key] = result
