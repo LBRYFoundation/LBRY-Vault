@@ -428,7 +428,7 @@ class Blockchain(util.PrintError):
             return GENESIS_BITS, MAX_TARGET
         if index == 0:
             return GENESIS_BITS, MAX_TARGET
-        first = self.read_header(index -1)
+        first = self.read_header(index)
         assert last is not None, "Last shouldn't be none"
         # bits to target
         bits = last.get('bits')
