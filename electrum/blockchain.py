@@ -103,15 +103,10 @@ def hash_raw_header(header: str) -> str:
     return hash_encode(sha256d(bfh(header)))
 
 def PoWHash(x):
-    util.print_error("11")
     r = sha512(Hash(x))
-    util.print_error("22")
     r1 = ripemd160(r[:len(r) // 2])
-    util.print_error("33")
     r2 = ripemd160(r[len(r) // 2:])
-    util.print_error("44")
     r3 = Hash(r1 + r2)
-    util.print_error("55")
     return r3
 
 blockchains = {}  # type: Dict[int, Blockchain]
@@ -486,33 +481,27 @@ class Blockchain(util.PrintError):
     def can_connect(self, header: dict, check_height: bool=True) -> bool:
         if header is None:
             return False
-        self.print_error("1")
         height = header['block_height']
         if check_height and self.height() != height - 1:
             self.print_error("cannot connect at height", height)
             return False
         if height == 0:
             return hash_header(header) == constants.net.GENESIS
-        self.print_error("2")
         try:
             prev_hash = self.get_hash(height - 1)
         except:
             return False
-        self.print_error("3")
         if prev_hash != header.get('prev_block_hash'):
             return False
-        self.print_error("4")
         try:
             bits, target = self.get_target2(height, header)
         except MissingHeader:
             return False
-        self.print_error("5")
         try:
             self.verify_header(header, prev_hash, target, bits)
         except BaseException as e:
             self.print_error(e)
             return False
-        self.print_error("6")
         return True
 
     def connect_chunk(self, idx: int, hexdata: str) -> bool:
