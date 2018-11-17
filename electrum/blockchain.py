@@ -233,14 +233,14 @@ class Blockchain(util.PrintError):
         for i in range(num):
             height = start_height + i
             header = self.read_header(height - 1)
-            bits, target = self.get_target2(height - 1, header)
+            #bits, target = self.get_target2(height - 1, header)
             try:
                 expected_header_hash = self.get_hash(height)
             except MissingHeader:
                 expected_header_hash = None
             raw_header = data[i*HEADER_SIZE : (i+1)*HEADER_SIZE]
             header = deserialize_header(raw_header, index*2016 + i)
-            self.verify_header(header, prev_hash, target, bits, expected_header_hash)
+            self.verify_header(header, prev_hash, 0, 0, expected_header_hash)
             prev_hash = hash_header(header)
 
     def path(self):
