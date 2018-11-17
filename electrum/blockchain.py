@@ -213,8 +213,10 @@ class Blockchain(util.PrintError):
 
     def verify_header(self, header: dict, prev_hash: str, target: int, bits: int, expected_header_hash: str=None) -> None:
         _hash = pow_hash_header(header)
-        if expected_header_hash and expected_header_hash != _hash:
-            raise Exception("hash mismatches with expected: {} vs {}".format(expected_header_hash, _hash))
+        if expected_header_hash:
+            _hash2 = hash_header(header)
+            if expected_header_hash != _hash2:
+                raise Exception("hash mismatches with expected: {} vs {}".format(expected_header_hash, _hash2))
         if prev_hash != header.get('prev_block_hash'):
             raise Exception("prev hash mismatch: %s vs %s" % (prev_hash, header.get('prev_block_hash')))
         if constants.net.TESTNET:
