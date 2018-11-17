@@ -229,11 +229,11 @@ class Blockchain(util.PrintError):
     def verify_chunk(self, index: int, data: bytes) -> None:
         num = len(data) // HEADER_SIZE
         start_height = index * 2016
+        header = self.read_header(start_height)
+        bits, target = self.get_target2(start_height, header)
         prev_hash = self.get_hash(start_height - 1)
         for i in range(num):
             height = start_height + i
-            header = self.read_header(height)
-            bits, target = self.get_target2(height, header)
             try:
                 expected_header_hash = self.get_hash(height)
             except MissingHeader:
