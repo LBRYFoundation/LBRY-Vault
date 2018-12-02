@@ -184,7 +184,7 @@ class BaseWizard(object):
     def import_addresses_or_keys(self):
         v = lambda x: keystore.is_address_list(x) or keystore.is_private_key_list(x)
         title = _("Import LBRY Credits Addresses")
-        message = _("Enter a list of Bitcoin addresses (this will create a watching-only wallet), or a list of private keys.")
+        message = _("Enter a list of LBRY Credits addresses (this will create a watching-only wallet), or a list of private keys.")
         self.add_xpub_dialog(title=title, message=message, run_next=self.on_import,
                              is_valid=v, allow_multi=True, show_wif_help=True)
 
@@ -547,7 +547,7 @@ class BaseWizard(object):
             _("Thus, you might want to keep using a non-segwit wallet in order to be able to receive LBRY Credits during the transition period.")
         ])
         choices = [
-            ('create_segwit_seed', _('Segwit')),
+            
             ('create_standard_seed', _('Legacy')),
         ]
         self.choice_dialog(title=title, message=message, choices=choices, run_next=self.run)
