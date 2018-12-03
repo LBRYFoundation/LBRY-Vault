@@ -340,14 +340,14 @@ class BaseWizard(object):
             # There is no general standard for HD multisig.
             # For legacy, this is partially compatible with BIP45; assumes index=0
             # For segwit, a custom path is used, as there is no standard at all.
-            default_choice_idx = 2
+            default_choice_idx = 0
             choices = [
                 ('standard',   'legacy multisig (p2sh)',            "m/45'/0"),
                 ('p2wsh-p2sh', 'p2sh-segwit multisig (p2wsh-p2sh)', purpose48_derivation(0, xtype='p2wsh-p2sh')),
                 ('p2wsh',      'native segwit multisig (p2wsh)',    purpose48_derivation(0, xtype='p2wsh')),
             ]
         else:
-            default_choice_idx = 2
+            default_choice_idx = 0
             choices = [
                 ('standard',    'legacy (p2pkh)',            bip44_derivation(0, bip43_purpose=44)),
                 ('p2wpkh-p2sh', 'p2sh-segwit (p2wpkh-p2sh)', bip44_derivation(0, bip43_purpose=49)),
@@ -547,7 +547,7 @@ class BaseWizard(object):
             _("Thus, you might want to keep using a non-segwit wallet in order to be able to receive LBRY Credits during the transition period.")
         ])
         choices = [
-            
+
             ('create_standard_seed', _('Legacy')),
         ]
         self.choice_dialog(title=title, message=message, choices=choices, run_next=self.run)
