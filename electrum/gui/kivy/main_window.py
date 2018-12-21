@@ -151,7 +151,7 @@ class ElectrumWindow(App):
         self.send_screen.set_URI(uri)
 
     def on_new_intent(self, intent):
-        if intent.getScheme() != 'bitcoin':
+        if intent.getScheme() != 'lbrycredits':
             return
         uri = intent.getDataString()
         self.set_URI(uri)
@@ -272,7 +272,7 @@ class ElectrumWindow(App):
 
         App.__init__(self)#, **kwargs)
 
-        title = _('Electrum App')
+        title = _('Electrum-LBRY App')
         self.electrum_config = config = kwargs.get('config', None)
         self.language = config.get('language', 'en')
         self.network = network = kwargs.get('network', None)  # type: Network
@@ -336,7 +336,7 @@ class ElectrumWindow(App):
         if is_address(data):
             self.set_URI(data)
             return
-        if data.startswith('bitcoin:'):
+        if data.startswith('lbrycredits:'):
             self.set_URI(data)
             return
         # try to decode transaction
@@ -775,7 +775,7 @@ class ElectrumWindow(App):
                 from plyer import notification
             icon = (os.path.dirname(os.path.realpath(__file__))
                     + '/../../' + self.icon)
-            notification.notify('Electrum', message,
+            notification.notify('Electrum-LBRY', message,
                             app_icon=icon, app_name='Electrum')
         except ImportError:
             Logger.Error('Notification: needs plyer; `sudo pip install plyer`')
