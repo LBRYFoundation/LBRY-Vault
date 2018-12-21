@@ -56,9 +56,9 @@ def inv_dict(d):
     return {v: k for k, v in d.items()}
 
 
-base_units = {'LBC':8, 'mLBC':5, 'bits':2, 'sat':0}
+base_units = {'LBC':8, 'mLBC':5, 'deweys':2, 'dewey':0}
 base_units_inverse = inv_dict(base_units)
-base_units_list = ['LBC', 'mLBC', 'bits', 'sat']  # list(dict) does not guarantee order
+base_units_list = ['LBC', 'mLBC', 'deweys', 'dewey']  # list(dict) does not guarantee order
 
 DECIMAL_POINT_DEFAULT = 5  # mBTC
 
