@@ -288,9 +288,12 @@ class Coinsecure(ExchangeBase):
         return {'INR': Decimal(json['lastprice'] / 100.0 )}
 
 class CoinMarketCap(ExchangeBase):
+
     async def get_rates(self, ccy):
+        ccys = ['USD']
         json = await self.get_json('api.coinmarketcap.com', '/v2/ticker/1298/?convert=BTC')
-        return {'LBC': Decimal(json['quotes']['USD']['price'])}
+        result[ccy] = Decimal(json['quotes']['USD']['price'])
+        return result
 
 class Foxbit(ExchangeBase):
 
@@ -492,7 +495,7 @@ class FxThread(ThreadJob):
                 self.exchange.update(self.ccy)
 
     def is_enabled(self):
-        return bool(self.config.get('use_exchange_rate'))
+        return bool(self.config.get('use_exchange_rate'), True)
 
     def set_enabled(self, b):
         self.config.set_key('use_exchange_rate', bool(b))
