@@ -495,7 +495,7 @@ class FxThread(ThreadJob):
                 self.exchange.update(self.ccy)
 
     def is_enabled(self):
-        return bool(self.config.get('use_exchange_rate'), True)
+        return bool(self.config.get('use_exchange_rate', True))
 
     def set_enabled(self, b):
         self.config.set_key('use_exchange_rate', bool(b))
