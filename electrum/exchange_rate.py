@@ -287,6 +287,10 @@ class Coinsecure(ExchangeBase):
         json = await self.get_json('api.coinsecure.in', '/v0/noauth/newticker')
         return {'INR': Decimal(json['lastprice'] / 100.0 )}
 
+class CoinMarketCap(ExchangeBase):
+    async def get_rates(self, ccy):
+        json = await self.get_json('api.coinmarketcap.com', '/v2/ticker/1298/?convert=BTC')
+        return {'LBC': Decimal(json['quotes']['USD']['price'])}
 
 class Foxbit(ExchangeBase):
 
@@ -514,10 +518,10 @@ class FxThread(ThreadJob):
 
     def get_currency(self):
         '''Use when dynamic fetching is needed'''
-        return self.config.get("currency", "EUR")
+        return self.config.get("currency", "USD")
 
     def config_exchange(self):
-        return self.config.get('use_exchange', 'BitcoinAverage')
+        return self.config.get('use_exchange', 'CoinMarketCap')
 
     def show_history(self):
         return self.is_enabled() and self.get_history_config() and self.ccy in self.exchange.history_ccys()

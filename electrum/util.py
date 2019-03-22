@@ -488,9 +488,9 @@ def user_dir():
     elif os.name == 'posix':
         return os.path.join(os.environ["HOME"], ".electrum")
     elif "APPDATA" in os.environ:
-        return os.path.join(os.environ["APPDATA"], "Electrum")
+        return os.path.join(os.environ["APPDATA"], "Electrum-lbry")
     elif "LOCALAPPDATA" in os.environ:
-        return os.path.join(os.environ["LOCALAPPDATA"], "Electrum")
+        return os.path.join(os.environ["LOCALAPPDATA"], "Electrum-lbry")
     else:
         #raise Exception("No home directory found in environment variables.")
         return
@@ -623,7 +623,7 @@ mainnet_block_explorers = {
     'LBRY Explorer': ('https://explorer.lbry.io/',
                         {'tx': 'tx/', 'addr': 'address/'}),
                         }
-                        
+
 testnet_block_explorers = {
     'Blocktrail.com': ('https://www.blocktrail.com/tBTC/',
                        {'tx': 'tx/', 'addr': 'address/'}),
@@ -647,7 +647,7 @@ def block_explorer_info():
 
 def block_explorer(config: 'SimpleConfig') -> str:
     from . import constants
-    default_ = 'Blockstream.info'
+    default_ = 'LBRY Explorer'
     be_key = config.get('block_explorer', default_)
     be = block_explorer_info().get(be_key)
     return be_key if be is not None else default_
