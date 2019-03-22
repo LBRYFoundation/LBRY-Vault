@@ -723,6 +723,9 @@
         "ZMW",
         "ZWL"
     ],
+    "CoinMarketCap": [
+        "USD"
+    ],
     "Foxbit": [
         "BRL"
     ],
