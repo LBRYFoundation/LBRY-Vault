@@ -291,7 +291,7 @@ class CoinMarketCap(ExchangeBase):
 
     async def get_rates(self, ccy):
         json = await self.get_json('api.coinmarketcap.com', '/v2/ticker/1298/?convert=%s' % ccy)
-        result[ccy] = Decimal(json['data']['quotes'][ccy]['price'])
+        result = {ccy: Decimal(json['data']['quotes'][ccy]['price'])}
         return result
 
 class Foxbit(ExchangeBase):
