@@ -588,5 +588,5 @@ class BaseWizard(object):
             self.wallet.synchronize()
             self.wallet.storage.write()
             self.terminate()
-        msg = _("Electrum is generating your addresses, please wait...")
+        msg = _("LBRY Vault is generating your addresses, please wait...")
         self.waiting_dialog(task, msg)
