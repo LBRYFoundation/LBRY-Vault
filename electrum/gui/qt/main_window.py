@@ -82,7 +82,7 @@ from .amountedit import AmountEdit, BTCAmountEdit, FreezableLineEdit, FeerateEdi
 from .qrcodewidget import QRCodeWidget, QRDialog
 from .qrtextedit import ShowQRTextEdit, ScanQRTextEdit
 from .transaction_dialog import show_transaction
-from .fee_slider import FeeSlider
+#from .fee_slider import FeeSlider
 from .util import (read_QIcon, ColorScheme, text_dialog, icon_path, WaitingDialog,
                    WindowModalDialog, ChoicesLayout, HelpLabel, Buttons,
                    OkButton, InfoButton, WWLabel, TaskThread, CancelButton,
@@ -991,8 +991,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         msg = ' '.join([
             _('Expiration date of your request.'),
             _('This information is seen by the recipient if you send them a signed payment request.'),
-            _('Expired requests have to be deleted manually from your list, in order to free the corresponding Bitcoin addresses.'),
-            _('The bitcoin address never expires and will always be part of this electrum wallet.'),
+             _('Expired requests have to be deleted manually from your list, in order to free the corresponding LBRY Credits addresses.'),
+            _('The LBRY Credits address never expires and will always be part of this electrum wallet.'),
         ])
         grid.addWidget(HelpLabel(_('Request expires'), msg), 2, 0)
         grid.addWidget(self.expires_combo, 2, 1)
@@ -1033,7 +1033,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             addr = str(self.receive_address_e.text())
             self.receive_address_widgets.setVisible(bool(addr))
 
-        msg = _('Bitcoin address where the payment should be received. Note that each payment request uses a different Bitcoin address.')
+        msg = _('LBRY Credits address where the payment should be received. Note that each payment request uses a different LBRY Credits address.')
         receive_address_label = HelpLabel(_('Receiving address'), msg)
 
         self.receive_address_e = ButtonsTextEdit()
@@ -1246,7 +1246,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
         self.amount_e = BTCAmountEdit(self.get_decimal_point)
         self.payto_e = PayToEdit(self)
         msg = _('Recipient of the funds.') + '\n\n'\
-              + _('You may enter a Bitcoin address, a label from your list of contacts (a list of completions will be proposed), or an alias (email-like address that forwards to a Bitcoin address)')
+              + _('You may enter a LBRY Credits address, a label from your list of contacts (a list of completions will be proposed), or an alias (email-like address that forwards to a LBRY Credits address)')
         payto_label = HelpLabel(_('Pay to'), msg)
         grid.addWidget(payto_label, 1, 0)
         grid.addWidget(self.payto_e, 1, 1, 1, -1)
@@ -2199,7 +2199,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, Logger):
             def show_mpk(index):
                 mpk_text.setText(mpk_list[index])
                 mpk_text.repaint()  # macOS hack for #4777
-                
+
             # only show the combobox in case multiple accounts are available
             if len(mpk_list) > 1:
                 # only show the combobox if multiple master keys are defined

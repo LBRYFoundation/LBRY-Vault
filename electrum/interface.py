@@ -445,8 +445,8 @@ class Interface(Logger):
         self.logger.info(f'requesting block header {height} in mode {assert_mode}')
         # use lower timeout as we usually have network.bhi_lock here
         timeout = self.network.get_network_timeout_seconds(NetworkTimeout.Urgent)
-        res = await self.session.send_request('blockchain.block.header', [height], timeout=timeout)
-        return blockchain.deserialize_header(bytes.fromhex(res), height)
+        res = await self.session.send_request('blockchain.block.headers', [height,1], timeout=timeout)
+        return blockchain.deserialize_header(bytes.fromhex(res['hex']), height)
 
     async def request_chunk(self, height: int, tip=None, *, can_return_early=False):
         index = height // 2016
@@ -518,10 +518,12 @@ class Interface(Logger):
 
     async def run_fetch_blocks(self):
         header_queue = asyncio.Queue()
-        await self.session.subscribe('blockchain.headers.subscribe', [], header_queue)
+        await self.session.subscribe('blockchain.headers.subscribe', [True], header_queue)
         while True:
             item = await header_queue.get()
-            raw_header = item[0]
+            print(item)
+            raw_header = item[1]
+            print(raw_header)
             height = raw_header['height']
             header = blockchain.deserialize_header(bfh(raw_header['hex']), height)
             self.tip_header = header

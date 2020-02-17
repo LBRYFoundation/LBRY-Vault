@@ -93,7 +93,7 @@ class Contacts(dict, Logger):
                 'type': 'openalias',
                 'validated': validated
             }
-        raise Exception("Invalid Bitcoin address or alias", k)
+        raise Exception("Invalid LBRY Credits address or alias", k)
 
     def resolve_openalias(self, url):
         # support email-style addresses, per the OA standard
@@ -103,7 +103,7 @@ class Contacts(dict, Logger):
         except DNSException as e:
             self.logger.info(f'Error resolving openalias: {repr(e)}')
             return None
-        prefix = 'btc'
+        prefix = 'lbc'
         for record in records:
             string = to_string(record.strings[0], 'utf8')
             if string.startswith('oa1:' + prefix):
@@ -121,7 +121,7 @@ class Contacts(dict, Logger):
             return regex.search(haystack).groups()[0]
         except AttributeError:
             return None
-            
+
     def _validate(self, data):
         for k, v in list(data.items()):
             if k == 'contacts':
@@ -133,4 +133,3 @@ class Contacts(dict, Logger):
                 if _type != 'address':
                     data.pop(k)
         return data
-
