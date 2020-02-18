@@ -59,7 +59,7 @@ Development version
 
 Check out the code from GitHub::
 
-    git clone git://github.com/kodxana/electrum.git
+    git clone git://github.com/kodxana/LBRY-Vault.git
     cd electrum
     git submodule update --init
 
