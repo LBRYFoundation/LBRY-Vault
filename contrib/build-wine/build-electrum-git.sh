@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NAME_ROOT=electrum
+NAME_ROOT=lbry-vault
 
 # These settings probably don't need any change
 export WINEPREFIX=/opt/wine64
@@ -73,7 +73,7 @@ info "building NSIS installer"
 wine "$WINEPREFIX/drive_c/Program Files (x86)/NSIS/makensis.exe" /DPRODUCT_VERSION=$VERSION electrum.nsi
 
 cd dist
-mv electrum-setup.exe $NAME_ROOT-$VERSION-setup.exe
+mv lbry-vault-setup.exe $NAME_ROOT-$VERSION-setup.exe
 cd ..
 
 info "Padding binaries to 8-byte boundaries, and fixing COFF image checksum in PE header"
@@ -118,4 +118,4 @@ EOF
     done
 )
 
-sha256sum dist/electrum*.exe
+sha256sum dist/lbry-vault*.exe
