@@ -26,13 +26,30 @@ Electrum - Lightweight Bitcoin client
 Getting started
 ===============
 
-Electrum is a pure python application. If you want to use the
-Qt interface, install the Qt dependencies::
+Electrum itself is pure Python, and so are most of the required dependencies.
+
+Non-python dependencies
+-----------------------
+
+If you want to use the Qt interface, install the Qt dependencies::
 
     sudo apt-get install python3-pyqt5
 
+For elliptic curve operations, libsecp256k1 is a required dependency::
+
+    sudo apt-get install libsecp256k1-0
+
+Alternatively, when running from a cloned repository, a script is provided to build
+libsecp256k1 yourself::
+
+    ./contrib/make_libsecp256k1.sh
+
+
+Running from tar.gz
+-------------------
+
 If you downloaded the official package (tar.gz), you can run
-Electrum from its root directory, without installing it on your
+Electrum from its root directory without installing it on your
 system; all the python dependencies are included in the 'packages'
 directory. To run Electrum from its root directory, just do::
 
@@ -40,40 +57,30 @@ directory. To run Electrum from its root directory, just do::
 
 You can also install Electrum on your system, by running this command::
 
-    sudo apt-get install python3-setuptools
-    python3 -m pip install .[fast]
+    sudo apt-get install python3-setuptools python3-pip
+    python3 -m pip install --user .
 
 This will download and install the Python dependencies used by
-Electrum, instead of using the 'packages' directory.
-The 'fast' extra contains some optional dependencies that we think
-are often useful but they are not strictly needed.
+Electrum instead of using the 'packages' directory.
 
 If you cloned the git repository, you need to compile extra files
 before you can run Electrum. Read the next section, "Development
-Version".
-
+version".
 
 
 Development version
-===================
+-------------------
 
 Check out the code from GitHub::
 
     git clone git://github.com/spesmilo/electrum.git
     cd electrum
+    git submodule update --init
 
 Run install (this should install dependencies)::
 
-    python3 -m pip install .[fast]
+    python3 -m pip install --user .
 
-Render the SVG icons to PNGs (optional)::
-
-    for i in lock unlock confirmed status_lagging status_disconnected status_connected_proxy status_connected status_waiting preferences; do convert -background none icons/$i.svg icons/$i.png; done
-
-Compile the icons file for Qt::
-
-    sudo apt-get install pyqt5-dev-tools
-    pyrcc5 icons.qrc -o electrum/gui/qt/icons_rc.py
 
 Compile the protobuf description file::
 
@@ -83,7 +90,7 @@ Compile the protobuf description file::
 Create translations (optional)::
 
     sudo apt-get install python-requests gettext
-    ./contrib/make_locale
+    ./contrib/pull_locale
 
 
 
@@ -91,25 +98,31 @@ Create translations (optional)::
 Creating Binaries
 =================
 
+Linux (tarball)
+---------------
 
-To create binaries, create the 'packages' directory::
+See :code:`contrib/build-linux/README.md`.
 
-    ./contrib/make_packages
 
-This directory contains the python dependencies used by Electrum.
+Linux (AppImage)
+----------------
+
+See :code:`contrib/build-linux/appimage/README.md`.
+
 
 Mac OS X / macOS
---------
+----------------
 
-See `contrib/build-osx/`.
+See :code:`contrib/osx/README.md`.
+
 
 Windows
 -------
 
-See `contrib/build-wine/`.
+See :code:`contrib/build-wine/README.md`.
 
 
 Android
 -------
 
-See `electrum/gui/kivy/Readme.md` file.
+See :code:`electrum/gui/kivy/Readme.md`.
