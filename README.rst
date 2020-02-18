@@ -1,4 +1,4 @@
-Electrum - Lightweight Bitcoin client
+LBRY Vault - Lightweight LBRY Credit client
 =====================================
 
 ::
@@ -9,24 +9,10 @@ Electrum - Lightweight Bitcoin client
   Homepage: https://electrum.org/
 
 
-.. image:: https://travis-ci.org/spesmilo/electrum.svg?branch=master
-    :target: https://travis-ci.org/spesmilo/electrum
-    :alt: Build Status
-.. image:: https://coveralls.io/repos/github/spesmilo/electrum/badge.svg?branch=master
-    :target: https://coveralls.io/github/spesmilo/electrum?branch=master
-    :alt: Test coverage statistics
-.. image:: https://d322cqt584bo4o.cloudfront.net/electrum/localized.svg
-    :target: https://crowdin.com/project/electrum
-    :alt: Help translate Electrum online
-
-
-
-
-
 Getting started
 ===============
 
-Electrum itself is pure Python, and so are most of the required dependencies.
+LBRY Vault itself is pure Python, and so are most of the required dependencies.
 
 Non-python dependencies
 -----------------------
@@ -49,7 +35,7 @@ Running from tar.gz
 -------------------
 
 If you downloaded the official package (tar.gz), you can run
-Electrum from its root directory without installing it on your
+LBRY Vault from its root directory without installing it on your
 system; all the python dependencies are included in the 'packages'
 directory. To run Electrum from its root directory, just do::
 
@@ -61,10 +47,10 @@ You can also install Electrum on your system, by running this command::
     python3 -m pip install --user .
 
 This will download and install the Python dependencies used by
-Electrum instead of using the 'packages' directory.
+LBRY Vault instead of using the 'packages' directory.
 
 If you cloned the git repository, you need to compile extra files
-before you can run Electrum. Read the next section, "Development
+before you can run LBRY Vault. Read the next section, "Development
 version".
 
 
@@ -73,7 +59,7 @@ Development version
 
 Check out the code from GitHub::
 
-    git clone git://github.com/spesmilo/electrum.git
+    git clone git://github.com/kodxana/electrum.git
     cd electrum
     git submodule update --init
 
