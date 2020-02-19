@@ -116,7 +116,7 @@ def sig_string_from_r_and_s(r: int, s: int) -> bytes:
 
 def _x_and_y_from_pubkey_bytes(pubkey: bytes) -> Tuple[int, int]:
     pubkey_ptr = create_string_buffer(64)
-        assert isinstance(pubkey, bytes), f'pubkey must be bytes, not {type(pubkey)}'
+    assert isinstance(pubkey, bytes), f'pubkey must be bytes, not {type(pubkey)}'
     ret = _libsecp256k1.secp256k1_ec_pubkey_parse(
         _libsecp256k1.ctx, pubkey_ptr, pubkey, len(pubkey))
     if not ret:
