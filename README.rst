@@ -2,7 +2,7 @@ LBRY Vault - Lightweight LBRY Credit client
 =====================================
 Guides
 ===============
-Guide for Ledger devices    
+Guide for Ledger devices -     
 https://kodxana.github.io/LBRY-Vault-website/
 
 Getting started
