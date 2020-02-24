@@ -1,13 +1,9 @@
 LBRY Vault - Lightweight LBRY Credit client
 =====================================
-
-::
-
-  Licence: MIT Licence
-  Author: Thomas Voegtlin
-  Language: Python (>= 3.6)
-  Homepage: https://electrum.org/
-
+Guides
+===============
+Guide for Ledger devices    
+https://kodxana.github.io/LBRY-Vault-website/
 
 Getting started
 ===============
