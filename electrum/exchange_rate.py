@@ -452,12 +452,11 @@ def get_exchanges_by_ccy(history=True):
 
 class FxThread(ThreadJob):
 
-    def __init__(self, config: SimpleConfig, network: Network):
+    def __init__(self, config: SimpleConfig, network: Optional[Network]):
         ThreadJob.__init__(self)
         self.config = config
         self.network = network
-        if self.network:
-            self.network.register_callback(self.set_proxy, ['proxy_set'])
+        util.register_callback(self.set_proxy, ['proxy_set'])
         self.ccy = self.get_currency()
         self.history_used_spot = False
         self.ccy_combo = None
@@ -516,8 +515,11 @@ class FxThread(ThreadJob):
         self.config.set_key('use_exchange_rate', bool(b))
         self.trigger_update()
 
-    def get_history_config(self, *, default=False):
-        return bool(self.config.get('history_rates', default))
+    def get_history_config(self, *, allow_none=False):
+        val = self.config.get('history_rates', None)
+        if val is None and allow_none:
+            return None
+        return bool(val)
 
     def set_history_config(self, b):
         self.config.set_key('history_rates', bool(b))
@@ -567,12 +569,11 @@ class FxThread(ThreadJob):
         self.exchange.read_historical_rates(self.ccy, self.cache_dir)
 
     def on_quotes(self):
-        if self.network:
-            self.network.trigger_callback('on_quotes')
+        util.trigger_callback('on_quotes')
 
     def on_history(self):
         if self.network:
-            self.network.trigger_callback('on_history')
+        util.trigger_callback('on_history')
 
     def exchange_rate(self) -> Decimal:
         """Returns the exchange rate as a Decimal"""

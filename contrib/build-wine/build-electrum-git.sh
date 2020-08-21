@@ -52,11 +52,6 @@ info "Pip installing Electrum. This might take a long time if the project folder
 $PYTHON -m pip install --no-dependencies --no-warn-script-location .
 popd
 
-
-# these are deleted as they were not deterministic; and are not needed anyway
-rm "$WINEPREFIX"/drive_c/python3/Lib/site-packages/jsonschema-*.dist-info/RECORD
-
-
 rm -rf dist/
 
 # build standalone and portable versions

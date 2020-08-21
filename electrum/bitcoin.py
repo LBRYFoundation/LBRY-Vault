@@ -25,7 +25,8 @@
 
 import hashlib
 from typing import List, Tuple, TYPE_CHECKING, Optional, Union
-from enum import IntEnum
+import enum
+from enum import IntEnum, Enum
 
 from .util import bfh, bh2u, BitcoinException, assert_bytes, to_bytes, inv_dict
 from . import version
@@ -43,6 +44,10 @@ if TYPE_CHECKING:
 COINBASE_MATURITY = 100
 COIN = 100000000
 TOTAL_COIN_SUPPLY_LIMIT_IN_BTC = 21000000
+
+NLOCKTIME_MIN = 0
+NLOCKTIME_BLOCKHEIGHT_MAX = 500_000_000 - 1
+NLOCKTIME_MAX = 2 ** 32 - 1
 
 # supported types of transaction outputs
 # TODO kill these with fire
@@ -295,19 +300,28 @@ def add_number_to_script(i: int) -> bytes:
 
 
 def relayfee(network: 'Network' = None) -> int:
+    """Returns feerate in sat/kbyte."""
     from .simple_config import FEERATE_DEFAULT_RELAY, FEERATE_MAX_RELAY
     if network and network.relay_fee is not None:
         fee = network.relay_fee
     else:
         fee = FEERATE_DEFAULT_RELAY
     fee = min(fee, FEERATE_MAX_RELAY)
-    fee = max(fee, 0)
+    fee = max(fee, FEERATE_DEFAULT_RELAY)
     return fee
 
 
-def dust_threshold(network: 'Network'=None) -> int:
+# see https://github.com/bitcoin/bitcoin/blob/a62f0ed64f8bbbdfe6467ac5ce92ef5b5222d1bd/src/policy/policy.cpp#L14
+DUST_LIMIT_DEFAULT_SAT_LEGACY = 546
+DUST_LIMIT_DEFAULT_SAT_SEGWIT = 294
+
+
+def dust_threshold(network: 'Network' = None) -> int:
+    """Returns the dust limit in satoshis."""
     # Change <= dust threshold is added to the tx fee
-    return 182 * 3 * relayfee(network) // 1000
+dust_lim = 182 * 3 * relayfee(network)  # in msat
+# convert to sat, but round up:
+return (dust_lim // 1000) + (dust_lim % 1000 > 0)
 
 
 def hash_encode(x: bytes) -> str:
@@ -422,6 +436,39 @@ def address_to_script(addr: str, *, net=None) -> str:
     else:
         raise BitcoinException(f'unknown address type: {addrtype}')
     return script
+
+class OnchainOutputType(Enum):
+    """Opaque types of scriptPubKeys.
+    In case of p2sh, p2wsh and similar, no knowledge of redeem script, etc.
+    """
+    P2PKH = enum.auto()
+    P2SH = enum.auto()
+    WITVER0_P2WPKH = enum.auto()
+    WITVER0_P2WSH = enum.auto()
+
+
+def address_to_hash(addr: str, *, net=None) -> Tuple[OnchainOutputType, bytes]:
+    """Return (type, pubkey hash / witness program) for an address."""
+    if net is None: net = constants.net
+    if not is_address(addr, net=net):
+        raise BitcoinException(f"invalid lbry address: {addr}")
+    witver, witprog = segwit_addr.decode(net.SEGWIT_HRP, addr)
+    if witprog is not None:
+        if witver != 0:
+            raise BitcoinException(f"not implemented handling for witver={witver}")
+        if len(witprog) == 20:
+            return OnchainOutputType.WITVER0_P2WPKH, bytes(witprog)
+        elif len(witprog) == 32:
+            return OnchainOutputType.WITVER0_P2WSH, bytes(witprog)
+        else:
+            raise BitcoinException(f"unexpected length for segwit witver=0 witprog: len={len(witprog)}")
+    addrtype, hash_160_ = b58_address_to_hash160(addr)
+    if addrtype == net.ADDRTYPE_P2PKH:
+        return OnchainOutputType.P2PKH, hash_160_
+    elif addrtype == net.ADDRTYPE_P2SH:
+        return OnchainOutputType.P2SH, hash_160_
+    raise BitcoinException(f"unknown address type: {addrtype}")
+
 
 def address_to_scripthash(addr: str) -> str:
     script = address_to_script(addr)
@@ -556,8 +603,8 @@ def is_segwit_script_type(txin_type: str) -> bool:
     return txin_type in ('p2wpkh', 'p2wpkh-p2sh', 'p2wsh', 'p2wsh-p2sh')
 
 
-def serialize_privkey(secret: bytes, compressed: bool, txin_type: str,
-                      internal_use: bool=False) -> str:
+def serialize_privkey(secret: bytes, compressed: bool, txin_type: str, *,
+                      internal_use: bool = False) -> str:
     # we only export secrets inside curve range
     secret = ecc.ECPrivkey.normalize_secret_bytes(secret)
     if internal_use:

@@ -28,7 +28,7 @@ import signal
 import sys
 import traceback
 import threading
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, List
 
 
 try:
@@ -92,6 +92,7 @@ class ElectrumGui(Logger):
     def __init__(self, config: 'SimpleConfig', daemon: 'Daemon', plugins: 'Plugins'):
         set_language(config.get('language', get_default_language()))
         Logger.__init__(self)
+        self.logger.info(f"Qt GUI starting up... Qt={QtCore.QT_VERSION_STR}, PyQt={QtCore.PYQT_VERSION_STR}")
         # Uncomment this call to verify objects are being properly
         # GC-ed when windows are closed
         #network.add_jobs([DebugMem([Abstract_Wallet, SPV, Synchronizer,
@@ -105,7 +106,7 @@ class ElectrumGui(Logger):
         self.config = config
         self.daemon = daemon
         self.plugins = plugins
-        self.windows = []
+        self.windows = []  # type: List[ElectrumWindow]
         self.efilter = OpenFileEventFilter(self.windows)
         self.app = QElectrumApplication(sys.argv)
         self.app.installEventFilter(self.efilter)
@@ -200,12 +201,15 @@ class ElectrumGui(Logger):
             self.lightning_dialog.close()
         if self.watchtower_dialog:
             self.watchtower_dialog.close()
+        self.app.quit()
 
     def new_window(self, path, uri=None):
         # Use a signal as can be called from daemon thread
         self.app.new_window_signal.emit(path, uri)
 
     def show_lightning_dialog(self):
+       if not self.daemon.network.is_lightning_running():
+            return
         if not self.lightning_dialog:
             self.lightning_dialog = LightningDialog(self)
         self.lightning_dialog.bring_to_top()
@@ -300,7 +304,7 @@ class ElectrumGui(Logger):
         return window
 
     def _start_wizard_to_select_or_create_wallet(self, path) -> Optional[Abstract_Wallet]:
-        wizard = InstallWizard(self.config, self.app, self.plugins)
+        wizard = InstallWizard(self.config, self.app, self.plugins, gui_object=self)
         try:
             path, storage = wizard.select_storage(path, self.daemon.get_wallet)
             # storage is None if file does not exist
@@ -339,7 +343,7 @@ class ElectrumGui(Logger):
         # Show network dialog if config does not exist
         if self.daemon.network:
             if self.config.get('auto_connect') is None:
-                wizard = InstallWizard(self.config, self.app, self.plugins)
+                wizard = InstallWizard(self.config, self.app, self.plugins, gui_object=self)
                 wizard.init_network(self.daemon.network)
                 wizard.terminate()
 
