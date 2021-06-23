@@ -128,7 +128,7 @@ class RequestList(MyTreeView):
                 tooltip = 'lightning request'
             elif request_type == PR_TYPE_ONCHAIN:
                 key = req['address']
-                icon = read_QIcon("bitcoin.png")
+                icon = read_QIcon("lbc.png")
                 tooltip = 'onchain request'
             items = [QStandardItem(e) for e in labels]
             self.set_editability(items)
