@@ -3,8 +3,9 @@
 ## Reporting a Vulnerability
 
 To report security issues send an email to electrumdev@gmail.com.
+To report security issues based on LBRY Vault, send an email to security@lbry.com.
 
-The following keys may be used to communicate sensitive information to developers:
+The following keys may be used to communicate sensitive information to the Electrum developers:
 
 | Name | Fingerprint |
 |------|-------------|
