@@ -109,7 +109,7 @@ class InvoiceList(MyTreeView):
                 icon_name = 'lightning.png'
             elif invoice_type == PR_TYPE_ONCHAIN:
                 key = item['id']
-                icon_name = 'bitcoin.png'
+                icon_name = 'lbrycredits.png'
                 if item.get('bip70'):
                     icon_name = 'seal.png'
             else:
