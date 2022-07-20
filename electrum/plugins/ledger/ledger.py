@@ -552,7 +552,7 @@ class LedgerPlugin(HW_PluginBase):
                    (0x2c97, 0x0004), # Nano-X
                    (0x2c97, 0x4011), # Nano-X app-bitcoin >= 1.5.1
                    (0x2c97, 0x4015), # Nano-X app-bitcoin >= 1.5.1
-                   (0x2c97, 0x0005), # RFU
+                   (0x2c97, 0x0005), # Nano-S Plus
                    (0x2c97, 0x0006), # RFU
                    (0x2c97, 0x0007), # RFU
                    (0x2c97, 0x0008), # RFU
@@ -572,6 +572,8 @@ class LedgerPlugin(HW_PluginBase):
         if device.product_key[0] == 0x2581 and device.product_key[1] == 0x3b7c:
             ledger = True
         if device.product_key[0] == 0x2581 and device.product_key[1] == 0x4b7c:
+            ledger = True
+        if device.product_key[0] == 0x2c97 and device.product_key[1] == 0x0005:
             ledger = True
         if device.product_key[0] == 0x2c97:
             if device.interface_number == 0 or device.usage_page == 0xffa0:
