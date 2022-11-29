@@ -721,7 +721,7 @@ def time_difference(distance_in_time, include_seconds):
         return "over %d years" % (round(distance_in_minutes / 525600))
 
 mainnet_block_explorers = {
-        'LBRY Explorer': ('https://explorer.lbry.io/',
+        'LBRY Explorer': ('https://explorer.lbry.com/',
                         {'tx': 'tx/', 'addr': 'address/'}),
 }
 
