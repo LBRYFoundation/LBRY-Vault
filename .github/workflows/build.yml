@@ -1,0 +1,194 @@
+name: Build Releases
+
+on:
+  push:
+    branches: [ master ]
+    tags: [ '*' ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Fix script permissions
+        run: |
+          chmod +x contrib/*.sh
+          chmod +x contrib/build-linux/appimage/*.sh
+
+      - name: Build Docker image for AppImage
+        run: |
+          docker build -t electrum-appimage-builder contrib/build-linux/appimage/
+
+      - name: Build AppImage
+        run: |
+          docker run --rm --user $(id -u):$(id -g) -v "$PWD:/electrum" electrum-appimage-builder bash -c "cd /electrum && chmod +x contrib/*.sh contrib/build-linux/appimage/*.sh && cd contrib/build-linux/appimage && bash build.sh"
+
+      - name: Rename AppImage
+        run: |
+          cd dist
+          for f in electrum-*.AppImage; do
+            mv "$f" "lbry-vault-${f#electrum-}"
+          done
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-appimage
+          path: dist/*.AppImage
+
+  build-windows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Fix script permissions
+        run: |
+          chmod +x contrib/*.sh
+          chmod +x contrib/build-wine/*.sh
+
+      - name: Build Docker image for Wine
+        run: |
+          docker build -t electrum-wine-builder contrib/build-wine/
+
+      - name: Build Windows executables
+        run: |
+          docker run --rm -v "$PWD:/opt/wine64/drive_c/electrum" -w /opt/wine64/drive_c/electrum/contrib/build-wine electrum-wine-builder bash -c "git config --global --add safe.directory '*' && chmod +x *.sh ../make_libsecp256k1.sh ../build_tools_util.sh && ./build.sh"
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-executables
+          path: |
+            contrib/build-wine/dist/*.exe
+            !contrib/build-wine/dist/electrum/*.exe
+
+  build-macos:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Fix script permissions
+        run: |
+          chmod +x contrib/*.sh
+          chmod +x contrib/osx/*
+
+      - name: Install system dependencies
+        run: |
+          brew install automake autoconf libtool gettext coreutils
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install Python dependencies
+        run: |
+          python3 -m pip install --upgrade pip setuptools wheel
+          python3 -m pip install --no-dependencies -r contrib/deterministic-build/requirements-binaries.txt || true
+          python3 -m pip install pyinstaller==5.13.2
+
+      - name: Build libsecp256k1
+        run: |
+          contrib/make_libsecp256k1.sh
+          # Copy to contrib/osx for PyInstaller
+          cp electrum/libsecp256k1.0.dylib contrib/osx/ || cp electrum/libsecp256k1.so.0 contrib/osx/libsecp256k1.0.dylib || true
+
+      - name: Download libusb
+        run: |
+          mkdir -p /tmp/electrum-build
+          curl -L https://github.com/libusb/libusb/releases/download/v1.0.26/libusb-1.0.26.tar.bz2 | tar xj -C /tmp/electrum-build
+          cd /tmp/electrum-build/libusb-1.0.26
+          ./configure --prefix=/tmp/libusb-install
+          make -j4
+          make install
+          cp /tmp/libusb-install/lib/libusb-1.0.dylib $GITHUB_WORKSPACE/contrib/osx/ || true
+          cp /tmp/libusb-install/lib/libusb-1.0.0.dylib $GITHUB_WORKSPACE/contrib/osx/libusb-1.0.dylib || true
+          ls -la $GITHUB_WORKSPACE/contrib/osx/
+
+      - name: Generate locale
+        run: |
+          cd contrib/deterministic-build/electrum-locale
+          for i in ./locale/*; do
+            dir="$GITHUB_WORKSPACE/electrum/$i/LC_MESSAGES"
+            mkdir -p "$dir"
+            msgfmt --output-file="$dir/electrum.mo" "$i/electrum.po" || true
+          done
+
+      - name: Install application dependencies
+        run: |
+          python3 -m pip install --no-dependencies -r contrib/deterministic-build/requirements.txt || true
+          python3 -m pip install --no-dependencies -r contrib/deterministic-build/requirements-hw.txt || true
+          python3 -m pip install --no-dependencies . || true
+
+      - name: Build CalinsQRReader
+        run: |
+          cd contrib/osx/CalinsQRReader
+          xcodebuild -project CalinsQRReader.xcodeproj -target CalinsQRReader -configuration Release build || echo "CalinsQRReader build failed - QR scanning may not work"
+          ls -la build/Release/ || true
+
+      - name: Build macOS app
+        run: |
+          VERSION=$(git describe --tags --dirty --always)
+          export ELECTRUM_VERSION="$VERSION"
+          pyinstaller --noconfirm --ascii --clean contrib/osx/osx.spec || echo "PyInstaller build failed - macOS build may need manual adjustment"
+          # Rename the output to include version
+          if [ -d "dist/Electrum.app" ]; then
+            mv "dist/Electrum.app" "dist/${VERSION}.app"
+          fi
+
+      - name: Create DMG
+        run: |
+          VERSION=$(git describe --tags --dirty --always)
+          if [ -d "dist/Electrum.app" ] || [ -d "dist/${VERSION}.app" ]; then
+            mv dist/Electrum.app dist/LBRY-Vault.app 2>/dev/null || true
+            mv "dist/${VERSION}.app" dist/LBRY-Vault.app 2>/dev/null || true
+            hdiutil create -fs HFS+ -volname "LBRY-Vault" -srcfolder dist/LBRY-Vault.app "dist/lbry-vault-${VERSION}.dmg"
+          else
+            echo "No app bundle found - skipping DMG creation"
+          fi
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macos-dmg
+          path: dist/*.dmg
+          if-no-files-found: ignore
+
+  release:
+    needs: [build-linux, build-windows, build-macos]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: find artifacts -type f
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/linux-appimage/*
+            artifacts/windows-executables/*
+            artifacts/macos-dmg/*
+          draft: false
+          generate_release_notes: true

@@ -547,14 +547,30 @@ class LedgerPlugin(HW_PluginBase):
                    (0x2c97, 0x0011), # Blue app-bitcoin >= 1.5.1
                    (0x2c97, 0x0015), # Blue app-bitcoin >= 1.5.1
                    (0x2c97, 0x0001), # Nano-S
+                   (0x2c97, 0x1000), # Nano-S newer firmware
+                   (0x2c97, 0x1001), # Nano-S newer firmware
                    (0x2c97, 0x1011), # Nano-S app-bitcoin >= 1.5.1
                    (0x2c97, 0x1015), # Nano-S app-bitcoin >= 1.5.1
                    (0x2c97, 0x0004), # Nano-X
+                   (0x2c97, 0x4000), # Nano-X newer firmware
+                   (0x2c97, 0x4001), # Nano-X newer firmware
                    (0x2c97, 0x4011), # Nano-X app-bitcoin >= 1.5.1
                    (0x2c97, 0x4015), # Nano-X app-bitcoin >= 1.5.1
                    (0x2c97, 0x0005), # Nano-S Plus
-                   (0x2c97, 0x0006), # RFU
-                   (0x2c97, 0x0007), # RFU
+                   (0x2c97, 0x5000), # Nano-S Plus newer firmware
+                   (0x2c97, 0x5001), # Nano-S Plus newer firmware
+                   (0x2c97, 0x5011), # Nano-S Plus app-bitcoin >= 1.5.1
+                   (0x2c97, 0x5015), # Nano-S Plus app-bitcoin >= 1.5.1
+                   (0x2c97, 0x0006), # Stax
+                   (0x2c97, 0x6000), # Stax newer firmware
+                   (0x2c97, 0x6001), # Stax newer firmware
+                   (0x2c97, 0x6011), # Stax app-bitcoin >= 1.5.1
+                   (0x2c97, 0x6015), # Stax app-bitcoin >= 1.5.1
+                   (0x2c97, 0x0007), # Flex
+                   (0x2c97, 0x7000), # Flex newer firmware
+                   (0x2c97, 0x7001), # Flex newer firmware
+                   (0x2c97, 0x7011), # Flex app-bitcoin >= 1.5.1
+                   (0x2c97, 0x7015), # Flex app-bitcoin >= 1.5.1
                    (0x2c97, 0x0008), # RFU
                    (0x2c97, 0x0009), # RFU
                    (0x2c97, 0x000a)  # RFU

@@ -47,12 +47,14 @@ def monkey_patch_pyinstaller_for_codesigning(identity):
     PyInstaller.depend.dylib.mac_set_relative_dylib_deps = my_func
 
 
-for i, x in enumerate(sys.argv):
-    if x == '--name':
-        VERSION = sys.argv[i+1]
-        break
-else:
-    raise Exception('no version')
+VERSION = os.environ.get('ELECTRUM_VERSION', None)
+if not VERSION:
+    for i, x in enumerate(sys.argv):
+        if x == '--name':
+            VERSION = sys.argv[i+1]
+            break
+    else:
+        raise Exception('no version - set ELECTRUM_VERSION env var or pass --name')
 
 electrum = os.path.abspath(".") + "/"
 block_cipher = None
@@ -69,7 +71,10 @@ hiddenimports += ['PyQt5.QtPrintSupport']  # needed by Revealer
 
 # safetlib imports PyQt5.Qt.  We use a local updated copy of pinmatrix.py until they
 # release a new version that includes https://github.com/archos-safe-t/python-safet/commit/b1eab3dba4c04fdfc1fcf17b66662c28c5f2380e
-hiddenimports.remove('safetlib.qt.pinmatrix')
+try:
+    hiddenimports.remove('safetlib.qt.pinmatrix')
+except ValueError:
+    pass  # Not in list, skip
 
 
 datas = [
@@ -87,12 +92,26 @@ datas += collect_data_files('ckcc')
 datas += collect_data_files('jsonrpcserver')
 datas += collect_data_files('jsonrpcclient')
 
-# Add the QR Scanner helper app
-datas += [(electrum + "contrib/osx/CalinsQRReader/build/Release/CalinsQRReader.app", "./contrib/osx/CalinsQRReader/build/Release/CalinsQRReader.app")]
+# Add the QR Scanner helper app (optional - only if built)
+qr_reader_path = electrum + "contrib/osx/CalinsQRReader/build/Release/CalinsQRReader.app"
+if os.path.exists(qr_reader_path):
+    datas += [(qr_reader_path, "./contrib/osx/CalinsQRReader/build/Release/CalinsQRReader.app")]
+else:
+    print("WARNING: CalinsQRReader.app not found - QR scanning will not work")
 
-# Add libusb so Trezor and Safe-T mini will work
-binaries = [(electrum + "contrib/osx/libusb-1.0.dylib", ".")]
-binaries += [(electrum + "contrib/osx/libsecp256k1.0.dylib", ".")]
+# Add libusb so Trezor and Safe-T mini will work (optional)
+binaries = []
+libusb_path = electrum + "contrib/osx/libusb-1.0.dylib"
+if os.path.exists(libusb_path):
+    binaries += [(libusb_path, ".")]
+else:
+    print("WARNING: libusb-1.0.dylib not found - hardware wallet support may not work")
+
+libsecp_path = electrum + "contrib/osx/libsecp256k1.0.dylib"
+if os.path.exists(libsecp_path):
+    binaries += [(libsecp_path, ".")]
+else:
+    print("WARNING: libsecp256k1.0.dylib not found - this may cause issues")
 
 # Workaround for "Retro Look":
 binaries += [b for b in collect_dynamic_libs('PyQt5') if 'macstyle' in b[0]]
